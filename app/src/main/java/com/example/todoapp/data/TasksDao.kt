@@ -13,13 +13,12 @@ interface TasksDao {
     @Update
     suspend fun updateTask(tasks: Tasks)
 
-    @Query("select * From Task_Table")
-    suspend fun displayAllTask(): List<Tasks>
+    @Query("select * From Task_Table where name like '%' || :name  || '%' order by important desc")
+     fun displayAllTask(name:String): Flow<List<Tasks>>
 
     @Delete
     suspend fun deleteTask(tasks: Tasks)
 
     @Query("delete  From Task_Table")
     suspend fun deleteAllTask()
-
 }
