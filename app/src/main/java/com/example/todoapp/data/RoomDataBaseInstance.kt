@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
 
-@Database(entities = [Tasks::class], version = 1)
+@Database(entities = [Tasks::class], version = 1,exportSchema = false)
 abstract class RoomDataBaseInstance : RoomDatabase() {
     abstract fun taskDao(): TasksDao
 

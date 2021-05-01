@@ -13,8 +13,27 @@ interface TasksDao {
     @Update
     suspend fun updateTask(tasks: Tasks)
 
-    @Query("select * From Task_Table where name like '%' || :name  || '%' order by important desc")
-     fun displayAllTask(name:String): Flow<List<Tasks>>
+    fun displayAllTask(
+        SearchName: String,
+        hideComplete: Boolean,
+        SortBy: SortOrder
+    ):Flow<List<Tasks>> {
+       return when(SortBy)
+       {
+           SortOrder.BY_DATE ->{
+               getSortByName(SearchName,hideComplete)
+           }
+           SortOrder.BY_NAME ->{
+               getSortByDate(SearchName,hideComplete)
+           }
+       }
+    }
+
+    @Query("select * From Task_Table where (complete !=:hideComplete Or complete = 0) and name like '%' || :SearchName  || '%' order by important desc,name")
+    fun getSortByName(SearchName: String, hideComplete: Boolean): Flow<List<Tasks>>
+
+    @Query("select * From Task_Table where (complete !=:hideComplete Or complete = 0) and name like '%' || :SearchName  || '%' order by important desc,created")
+    fun getSortByDate(SearchName: String, hideComplete: Boolean): Flow<List<Tasks>>
 
     @Delete
     suspend fun deleteTask(tasks: Tasks)
