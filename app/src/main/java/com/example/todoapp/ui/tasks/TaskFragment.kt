@@ -1,5 +1,8 @@
 package com.example.todoapp.ui.tasks
 
+import androidx.recyclerview.widget.RecyclerView
+
+
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -9,14 +12,19 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.todoapp.R
 import com.example.todoapp.data.SortOrder
+import com.example.todoapp.data.Tasks
 import com.example.todoapp.databinding.FragmentTaskBinding
 import com.example.todoapp.ui.tasks.recyc.TaskAdapter
 import com.example.todoapp.utils.onQueasyListenerChanged
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -24,9 +32,8 @@ import kotlinx.coroutines.launch
 class TaskFragment : Fragment(R.layout.fragment_task) {
     private val viewModel: TaskViewModel by viewModels()
     private lateinit var binding: FragmentTaskBinding
-    private val taskAdapter by lazy {
-        TaskAdapter()
-    }
+    private lateinit var taskAdapter: TaskAdapter
+
 
     @ExperimentalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -76,13 +83,70 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
         binding.apply {
             recycleViewList.apply {
                 layoutManager = LinearLayoutManager(requireContext())
+                taskAdapter = TaskAdapter { select: Tasks, click: Boolean, option: Boolean ->
+                    preferMyChoice(
+                        select,
+                        click,
+                        option
+                    )
+                }
                 adapter = taskAdapter
                 setHasFixedSize(true)
             }
+            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+                0,
+                ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+            ) {
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
+                ): Boolean {
+                    return false
+                }
+
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    val currPos = taskAdapter.currentList[viewHolder.adapterPosition]
+                    viewModel.deleteTaskData(currPos)
+                }
+            }).attachToRecyclerView(recycleViewList)
         }
-        viewModel.getData.observe(viewLifecycleOwner) {
-            taskAdapter.submitList(it)
+
+        viewModel.getData.observe(viewLifecycleOwner) { op ->
+            taskAdapter.submitList(op)
+        }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+            viewModel.taskEvent.collect { event ->
+                when (event) {
+                    is TaskViewModel.TaskEvent.ShowTasksMessage -> {
+                        Snackbar.make(requireView(), "Deleted The Task", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO"){
+                                viewModel.addNewTasks(event.tasks)
+                            }.show()
+                    }
+                }
+            }
         }
     }
 
+    private fun preferMyChoice(tasks: Tasks, click: Boolean, option: Boolean) {
+        when (option) {
+            true -> {
+                checkBoxClicked(tasks, click)
+            }
+            false -> {
+                itemClicked(tasks)
+            }
+        }
+    }
+
+    private fun itemClicked(tasks: Tasks) {
+        viewModel.itemClicked(tasks)
+        findNavController().navigate(R.id.action_taskFragment_to_taskEditAddFragment)
+    }
+
+    private fun checkBoxClicked(tasks: Tasks, click: Boolean) {
+        viewModel.updateCheckBox(tasks, click)
+    }
 }

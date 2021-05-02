@@ -19,8 +19,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = PRE
 
 @Singleton
 class ClassPersistence @Inject constructor(@ApplicationContext val context: Context) {
-//Read Data
-
+    //Read Data
     val readDataStore = context.dataStore.data.catch { exception ->
         if (exception is IOException) {
             Log.i(TAG, ":${exception.message}")
