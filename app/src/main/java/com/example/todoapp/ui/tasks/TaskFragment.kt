@@ -19,6 +19,7 @@ import com.example.todoapp.R
 import com.example.todoapp.data.SortOrder
 import com.example.todoapp.data.Tasks
 import com.example.todoapp.databinding.FragmentTaskBinding
+import com.example.todoapp.ui.tasks.dialog.MyDialogFrag
 import com.example.todoapp.ui.tasks.recyc.TaskAdapter
 import com.example.todoapp.utils.onQueasyListenerChanged
 import com.google.android.material.snackbar.Snackbar
@@ -81,6 +82,7 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
                 true
             }
             R.id.delete_completed -> {
+                findNavController().navigate(R.id.action_global_myDialogFrag)
                 true
             }
             else -> super.onOptionsItemSelected(item)

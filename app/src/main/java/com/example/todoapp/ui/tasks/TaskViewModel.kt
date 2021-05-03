@@ -5,6 +5,7 @@ import com.example.todoapp.data.ClassPersistence
 import com.example.todoapp.data.SortOrder
 import com.example.todoapp.data.Tasks
 import com.example.todoapp.data.TasksDao
+import com.example.todoapp.utils.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -33,6 +34,10 @@ class TaskViewModel @Inject constructor(
         get() = getLiveData
 
     var getRes: Boolean? = null
+
+    private val getMsgLiveData = MutableLiveData<Event<String>>()
+    val getMsgLiveDataNow: LiveData<Event<String>>
+        get() = getMsgLiveData
 
     @ExperimentalCoroutinesApi
     private val getDataS = combine(
@@ -74,6 +79,28 @@ class TaskViewModel @Inject constructor(
 
     fun addNewTasks(tasks: Tasks) = viewModelScope.launch {
         tasksDao.insetTask(tasks)
+    }
+
+    fun onAddOrUpdateItem(name: String?, imp: Boolean, res: Int?) {
+        if (name.isNullOrBlank()) {
+            getMsgLiveData.value = Event("Enter Some Value")
+        } else {
+            insertOrUpdateData(name, imp, res)
+        }
+    }
+
+    private fun insertOrUpdateData(name: String, imp: Boolean, res: Int?) = viewModelScope.launch {
+        if (res == null) {
+            tasksDao.insetTask(Tasks(0, name, important = imp))
+            getMsgLiveData.value = Event("New Task Added Successfully")
+        } else {
+            tasksDao.updateTask(Tasks(res, name = name, important = imp))
+            getMsgLiveData.value = Event("Task Is Updated Successfully")
+        }
+    }
+
+    fun deleteAll() = viewModelScope.launch {
+        tasksDao.deleteAllTask()
     }
 
     @ExperimentalCoroutinesApi
