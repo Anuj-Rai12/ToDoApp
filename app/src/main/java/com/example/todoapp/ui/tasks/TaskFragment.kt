@@ -1,7 +1,5 @@
 package com.example.todoapp.ui.tasks
 
-import androidx.recyclerview.widget.RecyclerView
-
 
 import android.os.Bundle
 import android.view.Menu
@@ -15,11 +13,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.todoapp.R
 import com.example.todoapp.data.SortOrder
 import com.example.todoapp.data.Tasks
 import com.example.todoapp.databinding.FragmentTaskBinding
-import com.example.todoapp.ui.tasks.dialog.MyDialogFrag
 import com.example.todoapp.ui.tasks.recyc.TaskAdapter
 import com.example.todoapp.utils.onQueasyListenerChanged
 import com.google.android.material.snackbar.Snackbar
@@ -34,7 +32,7 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
     private val viewModel: TaskViewModel by activityViewModels()
     private lateinit var binding: FragmentTaskBinding
     private lateinit var taskAdapter: TaskAdapter
-
+    private lateinit var searchRes: SearchView
 
     @ExperimentalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -56,7 +54,12 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_fragment_task, menu)
         val searchViews = menu.findItem(R.id.mysearchview)
-        val searchRes = searchViews?.actionView as SearchView
+        searchRes = searchViews?.actionView as SearchView
+        val queryPending = viewModel.getStateData.value
+        if (queryPending != null && queryPending.isNotEmpty()) {
+            searchViews.expandActionView()
+            searchRes.setQuery(queryPending, null == true)
+        }
         searchRes.onQueasyListenerChanged {
             viewModel.getStateData.value = it
         }
@@ -160,5 +163,10 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
 
     private fun checkBoxClicked(tasks: Tasks, click: Boolean) {
         viewModel.updateCheckBox(tasks, click)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        searchRes.setOnQueryTextListener(null)
     }
 }
