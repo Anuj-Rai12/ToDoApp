@@ -10,7 +10,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class TaskFragment : Fragment(R.layout.fragment_task) {
-    private val viewModel: TaskViewModel by viewModels()
+    private val viewModel: TaskViewModel by activityViewModels()
     private lateinit var binding: FragmentTaskBinding
     private lateinit var taskAdapter: TaskAdapter
 
@@ -41,6 +41,15 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
         binding = FragmentTaskBinding.bind(view)
         createRecyclerview()
         setHasOptionsMenu(true)
+        binding.fabAddTask.setOnClickListener {
+            viewModel.initial()
+            goToAddFragment()
+        }
+    }
+
+    private fun goToAddFragment() {
+        val action = TaskFragmentDirections.actionTaskFragmentToTaskEditAddFragment("New Tasks")
+        findNavController().navigate(action)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -121,7 +130,7 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
                 when (event) {
                     is TaskViewModel.TaskEvent.ShowTasksMessage -> {
                         Snackbar.make(requireView(), "Deleted The Task", Snackbar.LENGTH_LONG)
-                            .setAction("UNDO"){
+                            .setAction("UNDO") {
                                 viewModel.addNewTasks(event.tasks)
                             }.show()
                     }
@@ -136,14 +145,15 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
                 checkBoxClicked(tasks, click)
             }
             false -> {
-                itemClicked(tasks)
+                itemClicked(tasks, option)
             }
         }
     }
 
-    private fun itemClicked(tasks: Tasks) {
-        viewModel.itemClicked(tasks)
-        findNavController().navigate(R.id.action_taskFragment_to_taskEditAddFragment)
+    private fun itemClicked(tasks: Tasks, option: Boolean) {
+        viewModel.itemClicked(tasks, option)
+        val action = TaskFragmentDirections.actionTaskFragmentToTaskEditAddFragment("Edit Tasks")
+        findNavController().navigate(action)
     }
 
     private fun checkBoxClicked(tasks: Tasks, click: Boolean) {

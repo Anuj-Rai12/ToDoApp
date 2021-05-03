@@ -1,8 +1,6 @@
 package com.example.todoapp.ui.tasks
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.todoapp.data.ClassPersistence
 import com.example.todoapp.data.SortOrder
 import com.example.todoapp.data.Tasks
@@ -30,6 +28,12 @@ class TaskViewModel @Inject constructor(
     private val taskEventChannel = Channel<TaskEvent>()
     val taskEvent = taskEventChannel.receiveAsFlow()
 
+    private val getLiveData = MutableLiveData<Tasks>()
+    val getLiveDataNow: LiveData<Tasks>
+        get() = getLiveData
+
+    var getRes: Boolean? = null
+
     @ExperimentalCoroutinesApi
     private val getDataS = combine(
         preferencesFlow,
@@ -48,12 +52,17 @@ class TaskViewModel @Inject constructor(
         classPersistence.updateHIDEData(hide)
     }
 
-    fun itemClicked(tasks: Tasks) {
-        //Doing Same Time later
+    fun itemClicked(tasks: Tasks, option: Boolean = true) {
+        getLiveData.value = tasks
+        getRes = option
     }
 
     fun updateCheckBox(tasks: Tasks, click: Boolean) = viewModelScope.launch {
         tasksDao.updateTask(tasks.copy(complete = click))
+    }
+
+    fun initial() {
+        getRes = null
     }
 
     fun deleteTaskData(currPos: Tasks?) = viewModelScope.launch {
@@ -66,6 +75,7 @@ class TaskViewModel @Inject constructor(
     fun addNewTasks(tasks: Tasks) = viewModelScope.launch {
         tasksDao.insetTask(tasks)
     }
+
     @ExperimentalCoroutinesApi
     val getData = getDataS
 

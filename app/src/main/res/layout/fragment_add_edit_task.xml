@@ -27,9 +27,11 @@
             android:textSize="15sp"
             android:textStyle="bold" />
         <TextView
+            android:id="@+id/taskDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:text="Date Created:"
+            android:visibility="gone"
             />
     </LinearLayout>
 
