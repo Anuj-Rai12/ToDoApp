@@ -1,11 +1,13 @@
 package com.example.todoapp.ui.tasks
 
 
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -92,6 +94,8 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
         }
     }
 
+
+    @RequiresApi(Build.VERSION_CODES.M)
     @ExperimentalCoroutinesApi
     private fun createRecyclerview() {
         binding.apply {
@@ -127,7 +131,12 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
         }
 
         viewModel.getData.observe(viewLifecycleOwner) { op ->
-            taskAdapter.submitList(op)
+            if (op.isEmpty()) {
+                dips(View.VISIBLE, R.color.lightGrey)
+            } else {
+                dips(View.GONE, R.color.white)
+                taskAdapter.submitList(op)
+            }
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenCreated {
@@ -142,6 +151,17 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
                 }
             }
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun dips(gone: Int, white: Int) {
+        binding.tasksImg.visibility = gone
+        binding.recycleViewList.setBackgroundColor(
+            resources.getColor(
+                white,
+                null
+            )
+        )
     }
 
     private fun preferMyChoice(tasks: Tasks, click: Boolean, option: Boolean) {
