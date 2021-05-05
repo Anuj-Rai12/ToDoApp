@@ -34,8 +34,9 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
     private val viewModel: TaskViewModel by activityViewModels()
     private lateinit var binding: FragmentTaskBinding
     private lateinit var taskAdapter: TaskAdapter
-    private lateinit var searchRes: SearchView
+    private var searchRes: SearchView? = null
 
+    @RequiresApi(Build.VERSION_CODES.M)
     @ExperimentalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -58,11 +59,11 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
         val searchViews = menu.findItem(R.id.mysearchview)
         searchRes = searchViews?.actionView as SearchView
         val queryPending = viewModel.getStateData.value
-        if (queryPending != null && queryPending.isNotEmpty()) {
+        if (queryPending.isNotEmpty()) {
             searchViews.expandActionView()
-            searchRes.setQuery(queryPending, null == true)
+            searchRes?.setQuery(queryPending, false)
         }
-        searchRes.onQueasyListenerChanged {
+        searchRes?.onQueasyListenerChanged {
             viewModel.getStateData.value = it
         }
         viewLifecycleOwner.lifecycleScope.launch {
@@ -135,8 +136,8 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
                 dips(View.VISIBLE, R.color.lightGrey)
             } else {
                 dips(View.GONE, R.color.white)
-                taskAdapter.submitList(op)
             }
+            taskAdapter.submitList(op)
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenCreated {
@@ -187,6 +188,6 @@ class TaskFragment : Fragment(R.layout.fragment_task) {
 
     override fun onDestroy() {
         super.onDestroy()
-        searchRes.setOnQueryTextListener(null)
+        searchRes?.setOnQueryTextListener(null)
     }
 }
