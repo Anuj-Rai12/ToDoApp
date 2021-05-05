@@ -1,5 +1,6 @@
 package com.example.todoapp
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -13,7 +14,9 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
-
+companion object{
+    var uri:Uri?=null
+}
     /*
     private lateinit var appBarConfiguration: AppBarConfiguration*/
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,7 +29,7 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.fragment) as NavHostFragment
         navController = navHostFragment.findNavController()
-
+        uri= Uri.parse("android.resource://" + packageName + "/" + R.raw.barbarians)
         setupActionBarWithNavController(navController)
     }
 
