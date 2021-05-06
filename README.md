@@ -16,7 +16,8 @@ The App is Design In Kotlin And Follwed Mvvm Architecture,
  10. Alarm Manger
  11. BroadCast Reciver
  12. Notification Messages 
- 13. Kotin Flow 
+ 13. Kotlin Flow 
+ 14. View Binding
  
 ## App Features
 
