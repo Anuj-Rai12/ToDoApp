@@ -15,7 +15,6 @@ import androidx.navigation.fragment.findNavController
 import com.example.todoapp.R
 import com.example.todoapp.alarmes.servi.AlarmService
 import com.example.todoapp.databinding.FragmentAddEditTaskBinding
-import com.example.todoapp.utils.Constants
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
@@ -128,13 +127,19 @@ class TaskEditAddFragment : Fragment(R.layout.fragment_add_edit_task) {
                     this.set(Calendar.YEAR, year)
                     this.set(Calendar.MONTH, month)
                     this.set(Calendar.DAY_OF_MONTH, day)
+                    Log.i("MyTime", "$year convert to Long ${year.toLong()}")
+                    Log.i("MyTime", "$month convert to Long ${month.toLong()}")
+                    Log.i("MyTime", "$day convert to Long ${day.toLong()}")
                     TimePickerDialog(
                         requireContext(),
                         0,
                         { _, hour, minute ->
                             this.set(Calendar.HOUR_OF_DAY, hour)
                             this.set(Calendar.MINUTE, minute)
-                            getTime = this.timeInMillis
+                            getTime =
+                                this.timeInMillis + year.toLong()
+                            +month.toLong()
+                            +day.toLong()
                         },
                         this.get(Calendar.HOUR_OF_DAY),
                         this.get(Calendar.MINUTE),
@@ -147,7 +152,6 @@ class TaskEditAddFragment : Fragment(R.layout.fragment_add_edit_task) {
             ).show()
         }
     }
-
 
     @SuppressLint("SetTextI18n")
     private fun displayValues() {
